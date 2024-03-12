@@ -24,8 +24,8 @@ def set_start_date(portfolio_list):
     try:
         datetime.datetime.strptime(temp_date, '%Y-%m-%d')
     except ValueError:
-        print('输入的日期格式不正确，请重新输入')
-        return set_start_date()
+        print(f"输入的日期格式不正确, 以基金创建日期{est_date}为起始日进行回测。")
+        return est_date
     if temp_date < est_date:
         print(f"输入日期早于基金创建日期{est_date}, 以基金创建日期进行回测。")
         return est_date
