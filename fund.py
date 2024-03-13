@@ -10,7 +10,6 @@ class Fund():
         self.code = code
         self.__update_flag = False
         self.__set_name_type(fund_list)
-        self.__set_dt_index()
         self.__set_cls_index()
         self.__set_hfq_history()
         self.__set_bfq_history()
@@ -29,12 +28,22 @@ class Fund():
                 break
             except:
                 continue
-
-    def __set_dt_index(self):
-        """设置历史数据中的日期索引"""
-        dt_index = {'etf': '日期', 'lof': '日期', 
+    
+    def __reset_date_column_format(self, df):
+        """重置日期列格式"""
+        temp = {'etf': '日期', 'lof': '日期', 
                     'open': '净值日期', 'money': '净值日期'}
-        self.dt_index = dt_index[self.type]
+        dt_index = temp[self.type]
+        df[dt_index] = pd.to_datetime(df[dt_index], format='%Y-%m-%d')
+        df[dt_index] = df[dt_index].dt.strftime('%Y-%m-%d')
+        return df
+
+    def __reset_date_column_name(self, df):
+        """重置日期列名"""
+        if self.type in ['open', 'money']:
+            return df.rename(columns={'净值日期': '日期'})
+        else:
+            return df
 
     def __set_cls_index(self):
         """设置历史数据中的收盘价索引"""
@@ -50,6 +59,7 @@ class Fund():
             self.__update_hfq_history(filename)
         else:
             self.hfq_hist = pd.read_json(filename)
+            self.hfq_hist = self.__reset_date_column_name(self.hfq_hist)
 
     def __check_update_status(self, filename):
         try:
@@ -72,11 +82,9 @@ class Fund():
             self.hfq_hist = ak.fund_money_fund_info_em(fund=self.code)
         else:
             raise Exception(f"could not handle this type {self.type}!")
-        self.hfq_hist[self.dt_index] = pd.to_datetime(
-            self.hfq_hist[self.dt_index], format='%Y-%m-%d')
-        self.hfq_hist[self.dt_index] = self.hfq_hist[self.dt_index].dt.strftime(
-            '%Y-%m-%d')
+        self.hfq_hist = self.__reset_date_column_format(self.hfq_hist)
         self.hfq_hist.to_json(filename)
+        self.hfq_hist = self.__reset_date_column_name(self.hfq_hist)
 
     def __set_bfq_history(self):
         """获取基金不复权历史数据"""
@@ -86,6 +94,7 @@ class Fund():
             self.__update_bfq_history(filename)
         else:
             self.bfq_hist = pd.read_json(filename)
+            self.bfq_hist = self.__reset_date_column_name(self.bfq_hist)
 
     def __update_bfq_history(self, filename):
         """更新基金不复权历史数据"""
@@ -102,13 +111,11 @@ class Fund():
             self.bfq_hist = ak.fund_money_fund_info_em(fund=self.code)
         else:
             raise Exception(f"could not handle this type {self.type}!")
-        self.bfq_hist[self.dt_index] = pd.to_datetime(
-            self.bfq_hist[self.dt_index], format='%Y-%m-%d')
-        self.bfq_hist[self.dt_index] = self.bfq_hist[self.dt_index].dt.strftime(
-            '%Y-%m-%d')
+        self.bfq_hist = self.__reset_date_column_format(self.bfq_hist)
         self.bfq_hist.to_json(filename)
+        self.bfq_hist = self.__reset_date_column_name(self.bfq_hist)
 
     def __set_creation_date(self):
         """获取基金的成立日期"""
-        self.creation_date = self.hfq_hist[self.dt_index].iloc[0]
+        self.creation_date = self.hfq_hist['日期'].iloc[0]
     
