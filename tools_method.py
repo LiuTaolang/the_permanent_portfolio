@@ -1,5 +1,6 @@
 import os
 import datetime
+import json
 
 def __get_last_modified_time(filename):
     mtime = os.stat(filename).st_mtime
@@ -32,3 +33,15 @@ def set_start_date(portfolio_list):
     else:
         print(f"以{temp_date}为起始日，创建组合回测。")
         return temp_date
+    
+def init_portfolio_code(portfolio_path):
+    """初始化永久组合中各类基金的代码"""
+    try:
+        with open(portfolio_path, 'r') as f:
+            portfolio_code = json.load(f)
+    except FileNotFoundError:
+        portfolio_code = {'股票基金': '', '黄金基金': '', '长债基金': '', '货币基金': ''}
+        with open(portfolio_path, 'w') as f:
+            json.dump(portfolio_code, f)
+        
+    return portfolio_code
