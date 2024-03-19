@@ -2,6 +2,8 @@ import os
 import datetime
 import json
 
+import akshare as ak
+
 def __get_last_modified_time(filename):
     mtime = os.stat(filename).st_mtime
     mtime_dt = datetime.date.fromtimestamp(mtime)
@@ -42,6 +44,6 @@ def init_portfolio_code(portfolio_path):
     except FileNotFoundError:
         portfolio_code = {'股票基金': '', '黄金基金': '', '长债基金': '', '货币基金': ''}
         with open(portfolio_path, 'w') as f:
-            json.dump(portfolio_code, f)
-        
+            json.dump(portfolio_code, f)  
     return portfolio_code
+                      
